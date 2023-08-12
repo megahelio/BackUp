@@ -1,2 +1,2 @@
 # BackUp
- Simple BackUp Python Script
+ Simple back up Python Script
