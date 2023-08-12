@@ -1,3 +1,4 @@
+import pywhatkit
 import os
 import sys
 import shutil
@@ -15,7 +16,12 @@ def load_counter():
             return int(f.read())
     except FileNotFoundError:
         return 1
-
+        
+def notify_end():
+    #Notifica por Whatssapp
+    phone_number = "+34XXXXXXXXX"
+    pywhatkit.sendwhatmsg_instantly(
+        phone_number, "Back up finalizado", tab_close=True, close_time=0)
 
 def count_files_to_copy(path):
     file_list = []
@@ -27,9 +33,10 @@ def count_files_to_copy(path):
 def copy_files(source, destination):
     file_counter = load_counter()
     total_files = count_files_to_copy(source)
+    copied_files = 0
     print("TotalFiles: ", total_files)
+    for root, directories, files in os.walk(source):
 
-    for root, directories, files in tqdm(os.walk(source), unit="file", total=total_files):
         for file in tqdm(files, desc="Coping: "+os.path.relpath(root, source), unit="file", total=len(files)):
             source_path = os.path.join(root, file)
             relative_path = os.path.relpath(source_path, source)
@@ -45,7 +52,9 @@ def copy_files(source, destination):
             shutil.copy2(source_path, destination_path)
             save_counter(file_counter)
 
-    
+        copied_files += len(files)
+        print("Saved: ", {copied_files}/{total_files}*100,
+              "%", "=> ", {copied_files}, "/", {total_files})
 
 
 if __name__ == "__main__":
@@ -65,3 +74,4 @@ if __name__ == "__main__":
         # destination_directory = default_destination_directory
     counter_location = destination_directory+"/counter.txt"
     copy_files(source_directory, destination_directory)
+    notify_end()
