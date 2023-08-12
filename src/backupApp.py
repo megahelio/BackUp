@@ -53,8 +53,8 @@ def copy_files(source, destination):
             save_counter(file_counter)
 
         copied_files += len(files)
-        print("Saved: ", {copied_files}/{total_files}*100,
-              "%", "=> ", {copied_files}, "/", {total_files})
+        print("Saved: ", round(copied_files/total_files*100, 2),
+              "%", "=> ", copied_files, "/", total_files)
 
 
 if __name__ == "__main__":
