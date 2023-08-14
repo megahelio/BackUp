@@ -1,3 +1,22 @@
+"""
+Script Name: Copy Files Utility
+Description: A utility script to copy files from a source directory to a destination directory.
+Usage: python app.py -s <source_directory> -d <destination_directory> [-w] [-m] [-r]
+
+Arguments:
+  -s <source_directory>     : Specify the source directory for copying files.
+  -d <destination_directory>: Specify the destination directory for copied files.
+  -r                        : Rename all copied files as (1, 2, 3 ... n)
+  -w                        : Activate WhatsApp end notification mode.
+  -m                        : Activate mail end notification mode.
+
+Example Usages:
+  python app.py -s /path/to/source -d /path/to/destination -m
+  python app.py -s source_folder -d destination_folder -w -r
+
+Notes:
+  - The '-s' and '-d' flags are mandatory.
+"""
 import pywhatkit
 import os
 import sys
@@ -16,12 +35,18 @@ def load_counter():
             return int(f.read())
     except FileNotFoundError:
         return 1
-        
-def notify_end():
-    #Notifica por Whatssapp
+
+
+def notify_was():
+
     phone_number = "+34XXXXXXXXX"
     pywhatkit.sendwhatmsg_instantly(
         phone_number, "Back up finalizado", tab_close=True, close_time=0)
+
+
+def notify_mail():
+    print("notify_mail not implemented")
+
 
 def count_files_to_copy(path):
     file_list = []
@@ -30,8 +55,9 @@ def count_files_to_copy(path):
     return len(file_list)
 
 
-def copy_files(source, destination):
-    file_counter = load_counter()
+def copy_files(source, destination, rename):
+    if rename:
+        file_counter = load_counter()
     total_files = count_files_to_copy(source)
     copied_files = 0
     print("TotalFiles: ", total_files)
@@ -41,37 +67,43 @@ def copy_files(source, destination):
             source_path = os.path.join(root, file)
             relative_path = os.path.relpath(source_path, source)
             dir_name = os.path.dirname(relative_path)
-            file_extension = os.path.splitext(file)[1]
-            # Generar un nuevo nombre para el archivo usando un contador incremental
-            destination_filename = f"{file_counter}{file_extension}"
-            file_counter += 1
+            # Generate a new name for the file using an incrementing counter
+            if rename:
+                file_extension = os.path.splitext(file)[1]
+                destination_filename = f"{file_counter}{file_extension}"
+                file_counter += 1
+            else:
+                destination_filename = f"{file}"
             destination_path = os.path.join(
                 destination, dir_name, destination_filename)
-            # Crear la carpeta de destino si no existe
+            # Create destination folder if it doesn't exist
             os.makedirs(os.path.dirname(destination_path), exist_ok=True)
             shutil.copy2(source_path, destination_path)
-            save_counter(file_counter)
+            if rename:
+                save_counter(file_counter)
 
         copied_files += len(files)
         print("Saved: ", round(copied_files/total_files*100, 2),
-              "%", "=> ", copied_files, "/", total_files)
+              "%", "=> ", copied_files, "/", total_files, "\n")
 
 
 if __name__ == "__main__":
+    was = "-w" in sys.argv
+    mail = "-m" in sys.argv
+    rename = "-r" in sys.argv
 
-    if len(sys.argv) == 3:
-        source_directory = sys.argv[1]
-        destination_directory = sys.argv[2]
+    if "-s" in sys.argv and "-d" in sys.argv:
+        source_directory = sys.argv[sys.argv.index("-s") + 1]
+        destination_directory = sys.argv[sys.argv.index("-d") + 1]
     else:
-        default_source_directory = "C:/Users/Oscar/Desktop/test"
-        default_destination_directory = default_source_directory+"Copy"
-        source_directory = input(
-            f"Source directory [{default_source_directory}]: ") or default_source_directory
-        destination_directory = input(
-            f"Destination directory [{default_destination_directory}]: ") or default_destination_directory
 
-        # source_directory = default_source_directory
-        # destination_directory = default_destination_directory
+        source_directory = input("Source directory: ")
+        destination_directory = input("Destination directory: ") or source_directory+"Copy"
+
     counter_location = destination_directory+"/counter.txt"
-    copy_files(source_directory, destination_directory)
-    notify_end()
+    copy_files(source_directory, destination_directory, rename)
+
+    if mail:
+        notify_mail()
+    if was:
+        notify_was()
