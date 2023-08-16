@@ -1,7 +1,7 @@
 """
 Script Name: Copy Files Utility
 Description: A utility script to copy files from a source directory to a destination directory.
-Usage: python app.py -s <source_directory> -d <destination_directory> [-w] [-m] [-r]
+Usage: python Backup.py -s <source_directory> -d <destination_directory> [-w] [-m] [-r]
 
 Arguments:
   -s <source_directory>     : Specify the source directory for copying files.
@@ -11,8 +11,8 @@ Arguments:
   -m                        : Activate mail end notification mode.
 
 Example Usages:
-  python app.py -s /path/to/source -d /path/to/destination -m
-  python app.py -s source_folder -d destination_folder -w -r
+  python Backup.py -s /path/to/source -d /path/to/destination -m
+  python Backup.py -s source_folder -d destination_folder -w -r
 
 Notes:
   - The '-s' and '-d' flags are mandatory.
