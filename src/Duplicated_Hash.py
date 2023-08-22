@@ -3,6 +3,7 @@ import hashlib
 import sys
 from tqdm import tqdm
 
+
 def calculate_sha256(file_path, block_size=65536):
     """
     Calculate the SHA-256 hash of a file.
@@ -93,4 +94,4 @@ if __name__ == "__main__":
     else:
         of = False
 
-    find_duplicates_by_hash(search_directory, verbose, of)
+    print(find_duplicates_by_hash(search_directory, verbose, of))
