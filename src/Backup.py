@@ -164,13 +164,14 @@ def eliminar_carpetas_vacias(ruta_directorio):
 
 
 def copy_files(source, destination, rename, no_duplicate, delete_duplicade):
+    print(source, destination, rename, no_duplicate, delete_duplicade)
     if rename:
         file_counter = get_counter(counter_location)
     if no_duplicate:
         sha256_dict_destination = get_sha256_dict_destination(
             file_location=sha256_location, destination_path=destination)
+        print(sha256_dict_destination)
 
-    print(sha256_dict_destination)
     total_files_to_copy = count_files(source)
     copied_files = 0
     files_skipped_counter = 0
@@ -195,23 +196,28 @@ def copy_files(source, destination, rename, no_duplicate, delete_duplicade):
 
             hash_file_to_copy = calculate_sha256(os.path.join(root, file))
 
-            # Si el fichero no existe se copia
-            if no_duplicate and not hash_file_to_copy in sha256_dict_destination:
-                # Primero se copia porque es la operación que lleva más tiempo y es crítica (no quiero tener hashes/contadores de ficheros que se interrumpio su copia)
+            #NO se Habilita el modo de prevención de duplicados
+            if not no_duplicate:
                 shutil.copy2(source_path, destination_path)
                 copied_files += 1
-                # Agregar "sha256_fichero_copiado" : "ruta_donde_se_copia" al diccionario (previene arrastrar duplicados de la carpeta de origen)
-                sha256_dict_destination[hash_file_to_copy] = destination_path
-                if rename:
-                    save_counter(file_counter, counter_location)
-            # Si el fichero está duplicado
+            # Si se Habilita el modo de prevención de duplicados
             else:
-                if rename:
-                    file_counter -= 1
-                files_skipped_counter += 1
-                print(os.path.join(root, file), "already exists on",
-                      sha256_dict_destination[calculate_sha256(os.path.join(root, file))])
-
+                # Si el fichero no existe se copia
+                if no_duplicate and not hash_file_to_copy in sha256_dict_destination:
+                    # Primero se copia porque es la operación que lleva más tiempo y es crítica (no quiero tener hashes/contadores de ficheros que se interrumpio su copia)
+                    shutil.copy2(source_path, destination_path)
+                    copied_files += 1
+                    # Agregar "sha256_fichero_copiado" : "ruta_donde_se_copia" al diccionario (previene arrastrar duplicados de la carpeta de origen)
+                    sha256_dict_destination[hash_file_to_copy] = destination_path
+                    if rename:
+                        save_counter(file_counter, counter_location)
+                # Si el fichero está duplicado
+                else:
+                    if rename:
+                        file_counter -= 1
+                    files_skipped_counter += 1
+                    print(os.path.join(root, file), "already exists on",
+                        sha256_dict_destination[calculate_sha256(os.path.join(root, file))])
         # Calcular porcentaje
         try:
             percent = round(copied_files/(total_files_to_copy -
